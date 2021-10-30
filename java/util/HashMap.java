@@ -232,6 +232,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
 
     /**
      * The default initial capacity - MUST be a power of two.
+     * 默认初始换hashMap大小  初始长度必须是二的次幂
      */
     static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16
 
@@ -239,11 +240,12 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * The maximum capacity, used if a higher value is implicitly specified
      * by either of the constructors with arguments.
      * MUST be a power of two <= 1<<30.
+     * hashMap 的最大长度
      */
     static final int MAXIMUM_CAPACITY = 1 << 30;
 
     /**
-     * The load factor used when none specified in constructor.
+     * 默认扩容阈值
      */
     static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
@@ -275,6 +277,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     /**
      * Basic hash bin node, used for most entries.  (See below for
      * TreeNode subclass, and in LinkedHashMap for its Entry subclass.)
+     *
      */
     static class Node<K,V> implements Map.Entry<K,V> {
         final int hash;
@@ -374,10 +377,12 @@ public class HashMap<K,V> extends AbstractMap<K,V>
 
     /**
      * Returns a power of two size for the given target capacity.
+     * 用来计算初始化cap的大于它且最接近与它的2的次幂
      */
     static final int tableSizeFor(int cap) {
+        // 减一是为了把自身考虑进去  比如 8  结果是8
         int n = cap - 1;
-        n |= n >>> 1;
+        n |= n >>> 1;   // >>> 无符号右移
         n |= n >>> 2;
         n |= n >>> 4;
         n |= n >>> 8;
@@ -444,15 +449,23 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * @throws IllegalArgumentException if the initial capacity is negative
      *         or the load factor is nonpositive
      */
+    /**
+     * HashMap的构造函数
+     * @param initialCapacity 初始化长度
+     * @param loadFactor 初始化阈值
+     */
     public HashMap(int initialCapacity, float loadFactor) {
         if (initialCapacity < 0)
             throw new IllegalArgumentException("Illegal initial capacity: " +
                                                initialCapacity);
+        // 如果HashMap的初始化长度大于HashMap的最长长度，默认设置会最长长度
         if (initialCapacity > MAXIMUM_CAPACITY)
             initialCapacity = MAXIMUM_CAPACITY;
+        // 初始化阈值小于等于0或者为null 抛出异常
         if (loadFactor <= 0 || Float.isNaN(loadFactor))
             throw new IllegalArgumentException("Illegal load factor: " +
                                                loadFactor);
+        // 设置阈值和初始化长度
         this.loadFactor = loadFactor;
         this.threshold = tableSizeFor(initialCapacity);
     }
@@ -463,6 +476,10 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      *
      * @param  initialCapacity the initial capacity.
      * @throws IllegalArgumentException if the initial capacity is negative.
+     */
+    /**
+     * HashMap构造函数重构
+     * @param initialCapacity 初始化容量
      */
     public HashMap(int initialCapacity) {
         this(initialCapacity, DEFAULT_LOAD_FACTOR);

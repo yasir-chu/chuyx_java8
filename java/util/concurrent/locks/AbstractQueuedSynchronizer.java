@@ -286,6 +286,10 @@ import sun.misc.Unsafe;
  * @since 1.5
  * @author Doug Lea
  */
+
+/**
+ * 同步器
+ */
 public abstract class AbstractQueuedSynchronizer
     extends AbstractOwnableSynchronizer
     implements java.io.Serializable {
@@ -295,6 +299,7 @@ public abstract class AbstractQueuedSynchronizer
     /**
      * Creates a new {@code AbstractQueuedSynchronizer} instance
      * with initial synchronization state of zero.
+     * 无参构造器
      */
     protected AbstractQueuedSynchronizer() { }
 
@@ -377,21 +382,23 @@ public abstract class AbstractQueuedSynchronizer
      * expert group, for helpful ideas, discussions, and critiques
      * on the design of this class.
      */
+    /**
+     * 排队线程的最小单位
+     */
     static final class Node {
         /** Marker to indicate a node is waiting in shared mode */
         static final Node SHARED = new Node();
         /** Marker to indicate a node is waiting in exclusive mode */
         static final Node EXCLUSIVE = null;
 
-        /** waitStatus value to indicate thread has cancelled */
+        /** 表示线程获取锁的请求已经取消了 */
         static final int CANCELLED =  1;
-        /** waitStatus value to indicate successor's thread needs unparking */
+        /** 表示线程已经准备好 等在资源释放了  公平锁的情况下 排在等待队列的第一个 */
         static final int SIGNAL    = -1;
-        /** waitStatus value to indicate thread is waiting on condition */
+        /** 表示节点在等待队列中  节点线程等待被唤醒 */
         static final int CONDITION = -2;
         /**
-         * waitStatus value to indicate the next acquireShared should
-         * unconditionally propagate
+         * 当前线程处在SHARED情况下
          */
         static final int PROPAGATE = -3;
 
@@ -428,6 +435,7 @@ public abstract class AbstractQueuedSynchronizer
          * The field is initialized to 0 for normal sync nodes, and
          * CONDITION for condition nodes.  It is modified using CAS
          * (or when possible, unconditional volatile writes).
+         * 等待状态  上面的四个值
          */
         volatile int waitStatus;
 
@@ -441,6 +449,7 @@ public abstract class AbstractQueuedSynchronizer
          * head only as a result of successful acquire. A
          * cancelled thread never succeeds in acquiring, and a thread only
          * cancels itself, not any other node.
+         * 上一个节点
          */
         volatile Node prev;
 
@@ -456,12 +465,14 @@ public abstract class AbstractQueuedSynchronizer
          * double-check.  The next field of cancelled nodes is set to
          * point to the node itself instead of null, to make life
          * easier for isOnSyncQueue.
+         * 下一个节点
          */
         volatile Node next;
 
         /**
          * The thread that enqueued this node.  Initialized on
          * construction and nulled out after use.
+         * node的线程
          */
         volatile Thread thread;
 
@@ -537,6 +548,10 @@ public abstract class AbstractQueuedSynchronizer
      * This operation has memory semantics of a {@code volatile} read.
      * @return current state value
      */
+    /**
+     * 获取同步状态
+     * @return
+     */
     protected final int getState() {
         return state;
     }
@@ -545,6 +560,10 @@ public abstract class AbstractQueuedSynchronizer
      * Sets the value of synchronization state.
      * This operation has memory semantics of a {@code volatile} write.
      * @param newState the new state value
+     */
+    /**
+     * 设置同步状态
+     * @param newState
      */
     protected final void setState(int newState) {
         state = newState;
@@ -560,6 +579,12 @@ public abstract class AbstractQueuedSynchronizer
      * @param update the new value
      * @return {@code true} if successful. False return indicates that the actual
      *         value was not equal to the expected value.
+     */
+    /**
+     * 利用CAS（比较和替换）设置同步状态
+     * @param expect 比较值
+     * @param update 设置值
+     * @return 设置成功返回true 设置失败返回false
      */
     protected final boolean compareAndSetState(int expect, int update) {
         // See below for intrinsics setup to support this
@@ -1071,6 +1096,7 @@ public abstract class AbstractQueuedSynchronizer
      *         thrown in a consistent fashion for synchronization to work
      *         correctly.
      * @throws UnsupportedOperationException if exclusive mode is not supported
+     * 直接抛出异常 这是要求开发者必须重写该方法
      */
     protected boolean tryAcquire(int arg) {
         throw new UnsupportedOperationException();
