@@ -110,12 +110,12 @@ public class ArrayList<E> extends AbstractList<E>
     private static final long serialVersionUID = 8683452581122892189L;
 
     /**
-     * Default initial capacity.
+     * 默认初始容量
      */
     private static final int DEFAULT_CAPACITY = 10;
 
     /**
-     * Shared empty array instance used for empty instances.
+     * 默认 存储数据的容器
      */
     private static final Object[] EMPTY_ELEMENTDATA = {};
 
@@ -127,26 +127,17 @@ public class ArrayList<E> extends AbstractList<E>
     private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};
 
     /**
-     * The array buffer into which the elements of the ArrayList are stored.
-     * The capacity of the ArrayList is the length of this array buffer. Any
-     * empty ArrayList with elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA
-     * will be expanded to DEFAULT_CAPACITY when the first element is added.
+     * 存储数据的容器
      */
     transient Object[] elementData; // non-private to simplify nested class access
 
     /**
-     * The size of the ArrayList (the number of elements it contains).
-     *
-     * @serial
+     * 数组的大小
      */
     private int size;
 
     /**
-     * Constructs an empty list with the specified initial capacity.
-     *
-     * @param  initialCapacity  the initial capacity of the list
-     * @throws IllegalArgumentException if the specified initial capacity
-     *         is negative
+     * 初始化一个带数组大小的链表
      */
     public ArrayList(int initialCapacity) {
         if (initialCapacity > 0) {
@@ -160,7 +151,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Constructs an empty list with an initial capacity of ten.
+     * 初始化一个默认的数组
      */
     public ArrayList() {
         this.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;
@@ -232,6 +223,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     private void ensureExplicitCapacity(int minCapacity) {
+        /** 改变大小的次数 */
         modCount++;
 
         // overflow-conscious code
@@ -274,42 +266,29 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Returns the number of elements in this list.
-     *
-     * @return the number of elements in this list
+     * 获取链表的大小
      */
     public int size() {
         return size;
     }
 
     /**
-     * Returns <tt>true</tt> if this list contains no elements.
-     *
-     * @return <tt>true</tt> if this list contains no elements
+     * 链表的长度是否为0
+     * 默认的isEmpty方法无法判断 为null的情况
      */
     public boolean isEmpty() {
         return size == 0;
     }
 
     /**
-     * Returns <tt>true</tt> if this list contains the specified element.
-     * More formally, returns <tt>true</tt> if and only if this list contains
-     * at least one element <tt>e</tt> such that
-     * <tt>(o==null&nbsp;?&nbsp;e==null&nbsp;:&nbsp;o.equals(e))</tt>.
-     *
-     * @param o element whose presence in this list is to be tested
-     * @return <tt>true</tt> if this list contains the specified element
+     * 判断 o  是否存在在链表中
      */
     public boolean contains(Object o) {
         return indexOf(o) >= 0;
     }
 
     /**
-     * Returns the index of the first occurrence of the specified element
-     * in this list, or -1 if this list does not contain the element.
-     * More formally, returns the lowest index <tt>i</tt> such that
-     * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
-     * or -1 if there is no such index.
+     * 遍历链表 查询 o 在链表的啥位置
      */
     public int indexOf(Object o) {
         if (o == null) {
@@ -325,11 +304,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Returns the index of the last occurrence of the specified element
-     * in this list, or -1 if this list does not contain the element.
-     * More formally, returns the highest index <tt>i</tt> such that
-     * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
-     * or -1 if there is no such index.
+     * 查找 o 在链表中最后出现的位置
      */
     public int lastIndexOf(Object o) {
         if (o == null) {

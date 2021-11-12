@@ -317,14 +317,8 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     transient int modCount;
 
     /**
-     * The next size value at which to resize (capacity * load factor).
-     *
-     * @serial
+     * 当HashMap的Size达到这个数时会进行调整大小（即 负载因子和容量的积）
      */
-    // (The javadoc description is true upon serialization.
-    // Additionally, if the table array has not been allocated, this
-    // field holds the initial array capacity, or zero signifying
-    // DEFAULT_INITIAL_CAPACITY.)
     int threshold;
 
     /**
@@ -374,7 +368,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * 初始化一个HashMap  和m一样
      */
     public HashMap(Map<? extends K, ? extends V> m) {
-        /** 默认负载仪你在*/
+        /** 默认负载因子*/
         this.loadFactor = DEFAULT_LOAD_FACTOR;
         putMapEntries(m, false);
     }
@@ -1199,8 +1193,9 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         return result;
     }
 
-    // These methods are also used when serializing HashSets
+    /** 获取负载因子 */
     final float loadFactor() { return loadFactor; }
+    /** 获取容量 */
     final int capacity() {
         return (table != null) ? table.length :
             (threshold > 0) ? threshold :
