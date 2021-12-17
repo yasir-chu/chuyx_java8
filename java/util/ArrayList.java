@@ -120,9 +120,7 @@ public class ArrayList<E> extends AbstractList<E>
     private static final Object[] EMPTY_ELEMENTDATA = {};
 
     /**
-     * Shared empty array instance used for default sized empty instances. We
-     * distinguish this from EMPTY_ELEMENTDATA to know how much to inflate when
-     * first element is added.
+     * 默认的空数组
      */
     private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};
 
@@ -151,19 +149,15 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * 初始化一个默认的数组
+     * 初始化一个默认的数组-空数组
      */
     public ArrayList() {
         this.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;
     }
 
     /**
-     * Constructs a list containing the elements of the specified
-     * collection, in the order they are returned by the collection's
-     * iterator.
-     *
-     * @param c the collection whose elements are to be placed into this list
-     * @throws NullPointerException if the specified collection is null
+     * 构造器
+     * 构造一个存储信息和c一样的集合
      */
     public ArrayList(Collection<? extends E> c) {
         elementData = c.toArray();
@@ -178,9 +172,8 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Trims the capacity of this <tt>ArrayList</tt> instance to be the
-     * list's current size.  An application can use this operation to minimize
-     * the storage of an <tt>ArrayList</tt> instance.
+     * 将集合的容量修剪成列表的当前大小
+     * 可以使用这个方法来内存最小化集合
      */
     public void trimToSize() {
         modCount++;
@@ -240,10 +233,8 @@ public class ArrayList<E> extends AbstractList<E>
     private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
     /**
-     * Increases the capacity to ensure that it can hold at least the
-     * number of elements specified by the minimum capacity argument.
-     *
-     * @param minCapacity the desired minimum capacity
+     * 增加容量
+     * @param minCapacity 所需要的最小容量
      */
     private void grow(int minCapacity) {
         // overflow-conscious code

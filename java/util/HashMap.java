@@ -308,11 +308,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     transient int size;
 
     /**
-     * The number of times this HashMap has been structurally modified
-     * Structural modifications are those that change the number of mappings in
-     * the HashMap or otherwise modify its internal structure (e.g.,
-     * rehash).  This field is used to make iterators on Collection-views of
-     * the HashMap fail-fast.  (See ConcurrentModificationException).
+     * 改变大小的次数
      */
     transient int modCount;
 
@@ -374,11 +370,10 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     }
 
     /**
-     * Implements Map.putAll and Map constructor
+     * 将 参数m 的所有键值对 put如当前map
      *
      * @param m the map
-     * @param evict false when initially constructing this map, else
-     * true (relayed to method afterNodeInsertion).
+     * @param evict
      */
     final void putMapEntries(Map<? extends K, ? extends V> m, boolean evict) {
         int s = m.size();
@@ -474,7 +469,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     /**
      * Implements Map.put and related methods
      *
-     * @param hash hash for key
+     * @param hash key的hash
      * @param key the key
      * @param value the value to put
      * @param onlyIfAbsent if true, don't change existing value
@@ -525,11 +520,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     }
 
     /**
-     * Initializes or doubles table size.  If null, allocates in
-     * accord with initial capacity target held in field threshold.
-     * Otherwise, because we are using power-of-two expansion, the
-     * elements from each bin must either stay at same index, or move
-     * with a power of two offset in the new table.
+     * 扩容-重新规定容器大小
      *
      * @return the table
      */
