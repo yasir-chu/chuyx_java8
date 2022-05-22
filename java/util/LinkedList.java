@@ -87,21 +87,17 @@ public class LinkedList<E>
     transient int size = 0;
 
     /**
-     * Pointer to first node.
-     * Invariant: (first == null && last == null) ||
-     *            (first.prev == null && first.item != null)
+     * 头结点
      */
     transient Node<E> first;
 
     /**
-     * Pointer to last node.
-     * Invariant: (first == null && last == null) ||
-     *            (last.next == null && last.item != null)
+     * 尾节点
      */
     transient Node<E> last;
 
     /**
-     * Constructs an empty list.
+     * 初始化一个空的LinkedList
      */
     public LinkedList() {
     }
@@ -120,7 +116,7 @@ public class LinkedList<E>
     }
 
     /**
-     * Links e as first element.
+     * LinkedList的第一个元素插入
      */
     private void linkFirst(E e) {
         final Node<E> f = first;
@@ -135,7 +131,7 @@ public class LinkedList<E>
     }
 
     /**
-     * Links e as last element.
+     * 尾节点的设置
      */
     void linkLast(E e) {
         final Node<E> l = last;
@@ -150,7 +146,7 @@ public class LinkedList<E>
     }
 
     /**
-     * Inserts element e before non-null Node succ.
+     * 插入一个元素到succ的前面
      */
     void linkBefore(E e, Node<E> succ) {
         // assert succ != null;
@@ -967,9 +963,17 @@ public class LinkedList<E>
         }
     }
 
+    /**
+     * 双向循环链表的Node对象
+     *
+     * @param <E>
+     */
     private static class Node<E> {
+        // 储存元素
         E item;
+        // 下一节点
         Node<E> next;
+        // 上一节点
         Node<E> prev;
 
         Node(Node<E> prev, E element, Node<E> next) {
