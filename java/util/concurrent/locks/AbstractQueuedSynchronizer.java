@@ -601,9 +601,7 @@ public abstract class AbstractQueuedSynchronizer
     static final long spinForTimeoutThreshold = 1000L;
 
     /**
-     * Inserts node into queue, initializing if necessary. See picture above.
-     * @param node the node to insert
-     * @return node's predecessor
+     * 自旋  将当前线程设置为 节点
      */
     private Node enq(final Node node) {
         for (;;) {
@@ -622,14 +620,12 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Creates and enqueues node for current thread and given mode.
-     *
-     * @param mode Node.EXCLUSIVE for exclusive, Node.SHARED for shared
-     * @return the new node
+     * 加入等待队列
      */
     private Node addWaiter(Node mode) {
+        // 将当前线程 将当前线程构造成等待队列节点
         Node node = new Node(Thread.currentThread(), mode);
-        // Try the fast path of enq; backup to full enq on failure
+        // 将尾结点 赋值给前pred
         Node pred = tail;
         if (pred != null) {
             node.prev = pred;
@@ -872,16 +868,12 @@ public abstract class AbstractQueuedSynchronizer
      */
 
     /**
-     * Acquires in exclusive uninterruptible mode for thread already in
-     * queue. Used by condition wait methods as well as acquire.
-     *
-     * @param node the node
-     * @param arg the acquire argument
-     * @return {@code true} if interrupted while waiting
+     * 组装队列
      */
     final boolean acquireQueued(final Node node, int arg) {
         boolean failed = true;
         try {
+            // 中断位
             boolean interrupted = false;
             for (;;) {
                 final Node p = node.predecessor();
@@ -1209,16 +1201,7 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Acquires in exclusive mode, ignoring interrupts.  Implemented
-     * by invoking at least once {@link #tryAcquire},
-     * returning on success.  Otherwise the thread is queued, possibly
-     * repeatedly blocking and unblocking, invoking {@link
-     * #tryAcquire} until success.  This method can be used
-     * to implement method {@link Lock#lock}.
-     *
-     * @param arg the acquire argument.  This value is conveyed to
-     *        {@link #tryAcquire} but is otherwise uninterpreted and
-     *        can represent anything you like.
+     * 抢占锁
      */
     public final void acquire(int arg) {
         if (!tryAcquire(arg) &&
