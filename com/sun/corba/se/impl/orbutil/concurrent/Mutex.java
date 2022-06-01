@@ -133,13 +133,18 @@ package com.sun.corba.se.impl.orbutil.concurrent;
 
 public class Mutex implements Sync  {
 
-  /** The lock status **/
+  /** 锁状态 **/
   protected boolean inuse_ = false;
 
+  /**
+   * 独占式获取锁
+   * @throws InterruptedException 中断异常
+   */
   public void acquire() throws InterruptedException {
     if (Thread.interrupted()) throw new InterruptedException();
     synchronized(this) {
       try {
+        // 被占用则等待
         while (inuse_) wait();
         inuse_ = true;
       }
@@ -150,6 +155,7 @@ public class Mutex implements Sync  {
     }
   }
 
+  /** 释放锁 **/
   public synchronized void release()  {
     inuse_ = false;
     notify();

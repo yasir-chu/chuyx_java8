@@ -123,14 +123,17 @@ public class ReentrantLock implements Lock, java.io.Serializable {
         abstract void lock();
 
         /**
-         * Performs non-fair tryLock.  tryAcquire is implemented in
-         * subclasses, but both need nonfair try for trylock method.
+         * 非公平的获取同步状态
          */
         final boolean nonfairTryAcquire(int acquires) {
+            // 当前线程信息
             final Thread current = Thread.currentThread();
+            // 获取同步状态
             int c = getState();
             if (c == 0) {
+                // 0则是没有线程占有锁  cas设置同步状态
                 if (compareAndSetState(0, acquires)) {
+                    // 设置当前线程为占有线程
                     setExclusiveOwnerThread(current);
                     return true;
                 }

@@ -328,12 +328,12 @@ public abstract class AbstractQueuedSynchronizer
         volatile int waitStatus;
 
         /**
-         * 上一个节点
+         * 前驱节点
          */
         volatile Node prev;
 
         /**
-         * 下一个节点
+         * 后继节点
          */
         volatile Node next;
 
@@ -343,14 +343,7 @@ public abstract class AbstractQueuedSynchronizer
         volatile Thread thread;
 
         /**
-         * Link to next node waiting on condition, or the special
-         * value SHARED.  Because condition queues are accessed only
-         * when holding in exclusive mode, we just need a simple
-         * linked queue to hold nodes while they are waiting on
-         * conditions. They are then transferred to the queue to
-         * re-acquire. And because conditions can only be exclusive,
-         * we save a field by using special value to indicate shared
-         * mode.
+         * 等待队列中的后继节点
          */
         Node nextWaiter;
 
@@ -391,23 +384,24 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * 等待链表的头结点
+     * 同步队列的头结点
      */
     private transient volatile Node head;
 
     /**
-     * 等待链表的尾节点
+     * 同步队列的尾节点
      */
     private transient volatile Node tail;
 
     /**
      * 现在表示的同步状态
+     * 0代表没有没占用 大于0代表有线程持有当前锁 可以大于1  此时代表锁是可重入的，每次重入都要加上1
      */
     private volatile int state;
 
     /**
      * 获取同步状态
-     * @return
+     * @return 同步状态
      */
     protected final int getState() {
         return state;
@@ -442,7 +436,7 @@ public abstract class AbstractQueuedSynchronizer
     static final long spinForTimeoutThreshold = 1000L;
 
     /**
-     * 如果第一次失败  则循环尝试直至成功
+     * 如果第一次失败或者尾节点为空  则循环尝试直至成功
      * @param node 插入等脸链表的节点
      * @return 前尾节点
      */
@@ -717,8 +711,7 @@ public abstract class AbstractQueuedSynchronizer
      */
 
     /**
-     * Acquires in exclusive uninterruptible mode for thread already in
-     * queue. Used by condition wait methods as well as acquire.
+     * 以死循环的方式获取同步状态
      *
      * @param node the node
      * @param arg the acquire argument
@@ -774,11 +767,11 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Acquires in exclusive timed mode.
+     * 独占式超时获取同步状态
      *
-     * @param arg the acquire argument
-     * @param nanosTimeout max wait time
-     * @return {@code true} if acquired
+     * @param arg 同步状态
+     * @param nanosTimeout 最大自旋时间
+     * @return {@code true} 如果设置成功锁状态
      */
     private boolean doAcquireNanos(int arg, long nanosTimeout)
             throws InterruptedException {
@@ -1054,16 +1047,9 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Acquires in exclusive mode, ignoring interrupts.  Implemented
-     * by invoking at least once {@link #tryAcquire},
-     * returning on success.  Otherwise the thread is queued, possibly
-     * repeatedly blocking and unblocking, invoking {@link
-     * #tryAcquire} until success.  This method can be used
-     * to implement method {@link Lock#lock}.
-     *
-     * @param arg the acquire argument.  This value is conveyed to
-     *        {@link #tryAcquire} but is otherwise uninterpreted and
-     *        can represent anything you like.
+     * 独占获取锁
+     * 
+     * 完成同步状态的获取，节点的构造，加入同步队列以及在同步队列中自旋等待
      */
     public final void acquire(int arg) {
         if (!tryAcquire(arg) &&
@@ -1119,14 +1105,7 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Releases in exclusive mode.  Implemented by unblocking one or
-     * more threads if {@link #tryRelease} returns true.
-     * This method can be used to implement method {@link Lock#unlock}.
-     *
-     * @param arg the release argument.  This value is conveyed to
-     *        {@link #tryRelease} but is otherwise uninterpreted and
-     *        can represent anything you like.
-     * @return the value returned from {@link #tryRelease}
+     * 独占式的释放同步状态
      */
     public final boolean release(int arg) {
         if (tryRelease(arg)) {
