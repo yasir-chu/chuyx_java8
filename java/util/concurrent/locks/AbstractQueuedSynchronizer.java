@@ -465,9 +465,9 @@ public abstract class AbstractQueuedSynchronizer
      * @return 返回一个新尾节点
      */
     private Node addWaiter(Node mode) {
-        // 创建一个节点
+        // 将当前线程 将当前线程构造成等待队列节点
         Node node = new Node(Thread.currentThread(), mode);
-        // 尝试设置这个节点的上一个节点为等待链表的尾结点（尝试将自己变成尾节点）
+        // 将尾结点 赋值给前pred
         Node pred = tail;
         if (pred != null) {
             node.prev = pred;
@@ -720,6 +720,7 @@ public abstract class AbstractQueuedSynchronizer
     final boolean acquireQueued(final Node node, int arg) {
         boolean failed = true;
         try {
+            // 中断位
             boolean interrupted = false;
             for (;;) {
                 final Node p = node.predecessor();
@@ -1048,7 +1049,7 @@ public abstract class AbstractQueuedSynchronizer
 
     /**
      * 独占获取锁
-     * 
+     *
      * 完成同步状态的获取，节点的构造，加入同步队列以及在同步队列中自旋等待
      */
     public final void acquire(int arg) {

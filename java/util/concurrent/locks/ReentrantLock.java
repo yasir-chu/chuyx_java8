@@ -138,6 +138,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
                     return true;
                 }
             }
+            // 这里是代表可重入锁 如果当前线程是获取锁线程 可继续获取锁
             else if (current == getExclusiveOwnerThread()) {
                 int nextc = c + acquires;
                 if (nextc < 0) // overflow
@@ -206,12 +207,19 @@ public class ReentrantLock implements Lock, java.io.Serializable {
          * acquire on failure.
          */
         final void lock() {
+            // CAS 加锁
             if (compareAndSetState(0, 1))
+                // 成功了就设置获取锁线程为当前线程
                 setExclusiveOwnerThread(Thread.currentThread());
             else
                 acquire(1);
         }
 
+        /**
+         * 非公平锁抢占
+         * @param acquires
+         * @return
+         */
         protected final boolean tryAcquire(int acquires) {
             return nonfairTryAcquire(acquires);
         }
