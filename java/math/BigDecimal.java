@@ -218,6 +218,7 @@ import static java.math.BigInteger.LONG_MASK;
  * @author  Sergey V. Kuksenko
  */
 public class BigDecimal extends Number implements Comparable<BigDecimal> {
+
     /**
      * The unscaled value of this BigDecimal, as returned by {@link
      * #unscaledValue}.
@@ -228,10 +229,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
     private final BigInteger intVal;
 
     /**
-     * The scale of this BigDecimal, as returned by {@link #scale}.
-     *
-     * @serial
-     * @see #scale
+     * TBigDecimal 的小数位数
      */
     private final int scale;  // Note: this may have any value, so
                               // calculations must be done in longs
@@ -248,7 +246,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
     private transient int precision;
 
     /**
-     * Used to store the canonical string representation, if computed.
+     * 用于存储规范字符串表示 字符串存储的精度的浮点数
      */
     private transient String stringCache;
 
@@ -261,9 +259,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
     private static final BigInteger INFLATED_BIGINT = BigInteger.valueOf(INFLATED);
 
     /**
-     * If the absolute value of the significand of this BigDecimal is
-     * less than or equal to {@code Long.MAX_VALUE}, the value can be
-     * compactly stored in this field and used in computations.
+     * 有效数字的绝对值 只有小于Long.MAX_VALUE的时候才有
      */
     private final transient long intCompact;
 
@@ -282,7 +278,9 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
         }
     };
 
-    // Cache of common small BigDecimal values.
+    /**
+     * 缓存常量 没有小数位
+     */
     private static final BigDecimal zeroThroughTen[] = {
         new BigDecimal(BigInteger.ZERO,       0,  0, 1),
         new BigDecimal(BigInteger.ONE,        1,  0, 1),
@@ -297,7 +295,9 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
         new BigDecimal(BigInteger.TEN,        10, 0, 2),
     };
 
-    // Cache of zero scaled by 0 - 15
+    /**
+     * 缓存0 的 小数位 0-15 的常量
+     */
     private static final BigDecimal[] ZERO_SCALED_BY = {
         zeroThroughTen[0],
         new BigDecimal(BigInteger.ZERO, 0, 1, 1),
@@ -324,8 +324,6 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
     // Constants
     /**
      * The value 0, with a scale of 0.
-     *
-     * @since  1.5
      */
     public static final BigDecimal ZERO =
         zeroThroughTen[0];
@@ -349,9 +347,11 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
     // Constructors
 
     /**
-     * Trusted package private constructor.
-     * Trusted simply means if val is INFLATED, intVal could not be null and
-     * if intVal is null, val could not be INFLATED.
+     * 构造方法
+     * @param scale 小数位数
+     * @param val  有效数字的绝对值
+     * @param intVal
+     * @param prec
      */
     BigDecimal(BigInteger intVal, long val, int scale, int prec) {
         this.scale = scale;
@@ -417,14 +417,15 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
 
         // Use locals for all fields values until completion
         int prec = 0;                 // record precision value
-        int scl = 0;                  // record scale value
+        int scl = 0;                  // record scale value x
         long rs = 0;                  // the compact value in long
         BigInteger rb = null;         // the inflated value in BigInteger
         // use array bounds checking to handle too-long, len == 0,
         // bad offset, etc.
         try {
-            // handle the sign
+            // 是否是负数
             boolean isneg = false;          // assume positive
+            // 负数
             if (in[offset] == '-') {
                 isneg = true;               // leading minus means negative
                 offset++;
@@ -435,7 +436,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
             }
 
             // should now be at numeric part of the significand
-            boolean dot = false;             // true when there is a '.'
+            boolean dot = false;             // true when there is a '.'  是否在. 这个位置
             long exp = 0;                    // exponent
             char c;                          // current character
             boolean isCompact = (len <= MAX_COMPACT_DIGITS);
@@ -447,6 +448,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
                 // and we can just compute the value in place.
                 for (; len > 0; offset++, len--) {
                     c = in[offset];
+                    //
                     if ((c == '0')) { // have zero
                         if (prec == 0)
                             prec = 1;
@@ -2259,74 +2261,24 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
     // Rounding Modes
 
     /**
-     * Rounding mode to round away from zero.  Always increments the
-     * digit prior to a nonzero discarded fraction.  Note that this rounding
-     * mode never decreases the magnitude of the calculated value.
+     * ROUND_CEILING //向正无穷方向舍入
+     * ROUND_UP //不管保留数字后面是大是小 (0 除外) 都会进1
+     * ROUND_DOWN //舍去制，截断操作，后面所有数字直接去除。结果会向原点方向对齐
+     * ROUND_FLOOR //向负无穷方向舍入
+     * ROUND_HALF_EVEN //向（距离）最近的一边舍入，除非两边（的距离）是相等,如果是这样，如果保留位数是奇数，使用ROUND_HALF_UP，如果是偶数，使用ROUND_HALF_DOWN
+     * ROUND_HALF_UP //向（距离）最近的一边舍入，除非两边（的距离）是相等,如果是这样，向上舍入, 3.15保留一位小数结果为3.2，传说中的四舍五入。
+     * ROUND_HALF_DOWN //向（距离）最近的一边舍入，除非两边（的距离）是相等,如果是这样，向下舍入, 例如3.15 保留一位小数结果为3.1
+     * ROUND_UNNECESSARY //计算结果是精确的，不需要舍入模式
+     *
      */
+
     public final static int ROUND_UP =           0;
-
-    /**
-     * Rounding mode to round towards zero.  Never increments the digit
-     * prior to a discarded fraction (i.e., truncates).  Note that this
-     * rounding mode never increases the magnitude of the calculated value.
-     */
     public final static int ROUND_DOWN =         1;
-
-    /**
-     * Rounding mode to round towards positive infinity.  If the
-     * {@code BigDecimal} is positive, behaves as for
-     * {@code ROUND_UP}; if negative, behaves as for
-     * {@code ROUND_DOWN}.  Note that this rounding mode never
-     * decreases the calculated value.
-     */
     public final static int ROUND_CEILING =      2;
-
-    /**
-     * Rounding mode to round towards negative infinity.  If the
-     * {@code BigDecimal} is positive, behave as for
-     * {@code ROUND_DOWN}; if negative, behave as for
-     * {@code ROUND_UP}.  Note that this rounding mode never
-     * increases the calculated value.
-     */
     public final static int ROUND_FLOOR =        3;
-
-    /**
-     * Rounding mode to round towards {@literal "nearest neighbor"}
-     * unless both neighbors are equidistant, in which case round up.
-     * Behaves as for {@code ROUND_UP} if the discarded fraction is
-     * &ge; 0.5; otherwise, behaves as for {@code ROUND_DOWN}.  Note
-     * that this is the rounding mode that most of us were taught in
-     * grade school.
-     */
     public final static int ROUND_HALF_UP =      4;
-
-    /**
-     * Rounding mode to round towards {@literal "nearest neighbor"}
-     * unless both neighbors are equidistant, in which case round
-     * down.  Behaves as for {@code ROUND_UP} if the discarded
-     * fraction is {@literal >} 0.5; otherwise, behaves as for
-     * {@code ROUND_DOWN}.
-     */
     public final static int ROUND_HALF_DOWN =    5;
-
-    /**
-     * Rounding mode to round towards the {@literal "nearest neighbor"}
-     * unless both neighbors are equidistant, in which case, round
-     * towards the even neighbor.  Behaves as for
-     * {@code ROUND_HALF_UP} if the digit to the left of the
-     * discarded fraction is odd; behaves as for
-     * {@code ROUND_HALF_DOWN} if it's even.  Note that this is the
-     * rounding mode that minimizes cumulative error when applied
-     * repeatedly over a sequence of calculations.
-     */
     public final static int ROUND_HALF_EVEN =    6;
-
-    /**
-     * Rounding mode to assert that the requested operation has an exact
-     * result, hence no rounding is necessary.  If this rounding mode is
-     * specified on an operation that yields an inexact result, an
-     * {@code ArithmeticException} is thrown.
-     */
     public final static int ROUND_UNNECESSARY =  7;
 
 
@@ -4417,6 +4369,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
         long sum = xs + ys;
         // See "Hacker's Delight" section 2-12 for explanation of
         // the overflow test.
+        // 判断没有越界
         if ( (((sum ^ xs) & (sum ^ ys))) >= 0L) { // not overflowed
             return sum;
         }
@@ -4431,8 +4384,10 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
     }
 
     private static BigDecimal add(final long xs, int scale1, final long ys, int scale2) {
+        // 小数位相差
         long sdiff = (long) scale1 - scale2;
         if (sdiff == 0) {
+            // 小数位一样
             return add(xs, ys, scale1);
         } else if (sdiff < 0) {
             int raise = checkScale(xs,-sdiff);

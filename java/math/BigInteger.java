@@ -122,12 +122,7 @@ import sun.misc.FloatConsts;
 
 public class BigInteger extends Number implements Comparable<BigInteger> {
     /**
-     * The signum of this BigInteger: -1 for negative, 0 for zero, or
-     * 1 for positive.  Note that the BigInteger zero <i>must</i> have
-     * a signum of 0.  This is necessary to ensures that there is exactly one
-     * representation for each BigInteger value.
-     *
-     * @serial
+     * 这个BigInteger 的符号 -1 表示为负数 0表示为0 1表示为正数
      */
     final int signum;
 
