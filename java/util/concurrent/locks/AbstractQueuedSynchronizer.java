@@ -344,6 +344,7 @@ public abstract class AbstractQueuedSynchronizer
 
         /**
          * 等待队列中的后继节点
+         * 如果当前节点是共享的 则它是SHARED常量
          */
         Node nextWaiter;
 
@@ -409,14 +410,14 @@ public abstract class AbstractQueuedSynchronizer
 
     /**
      * 设置同步状态
-     * @param newState
+     * @param newState 新同步状态
      */
     protected final void setState(int newState) {
         state = newState;
     }
 
     /**
-     * 利用CAS（比较和替换）设置同步状态
+     * 利用CAS（比较和替换）设置同步状态 具有原子性
      * @param expect 比较值
      * @param update 设置值
      * @return 设置成功返回true 设置失败返回false
@@ -908,140 +909,39 @@ public abstract class AbstractQueuedSynchronizer
         }
     }
 
-    // Main exported methods
+    // Main exported methods 主要需实现方法
 
     /**
-     * Attempts to acquire in exclusive mode. This method should query
-     * if the state of the object permits it to be acquired in the
-     * exclusive mode, and if so to acquire it.
-     *
-     * <p>This method is always invoked by the thread performing
-     * acquire.  If this method reports failure, the acquire method
-     * may queue the thread, if it is not already queued, until it is
-     * signalled by a release from some other thread. This can be used
-     * to implement method {@link Lock#tryLock()}.
-     *
-     * <p>The default
-     * implementation throws {@link UnsupportedOperationException}.
-     *
-     * @param arg the acquire argument. This value is always the one
-     *        passed to an acquire method, or is the value saved on entry
-     *        to a condition wait.  The value is otherwise uninterpreted
-     *        and can represent anything you like.
-     * @return {@code true} if successful. Upon success, this object has
-     *         been acquired.
-     * @throws IllegalMonitorStateException if acquiring would place this
-     *         synchronizer in an illegal state. This exception must be
-     *         thrown in a consistent fashion for synchronization to work
-     *         correctly.
-     * @throws UnsupportedOperationException if exclusive mode is not supported
-     * 直接抛出异常 这是要求开发者必须重写该方法
+     * 独占式的获取同步状态
      */
     protected boolean tryAcquire(int arg) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Attempts to set the state to reflect a release in exclusive
-     * mode.
-     *
-     * <p>This method is always invoked by the thread performing release.
-     *
-     * <p>The default implementation throws
-     * {@link UnsupportedOperationException}.
-     *
-     * @param arg the release argument. This value is always the one
-     *        passed to a release method, or the current state value upon
-     *        entry to a condition wait.  The value is otherwise
-     *        uninterpreted and can represent anything you like.
-     * @return {@code true} if this object is now in a fully released
-     *         state, so that any waiting threads may attempt to acquire;
-     *         and {@code false} otherwise.
-     * @throws IllegalMonitorStateException if releasing would place this
-     *         synchronizer in an illegal state. This exception must be
-     *         thrown in a consistent fashion for synchronization to work
-     *         correctly.
-     * @throws UnsupportedOperationException if exclusive mode is not supported
+     * 独占式的释放同步状态
      */
     protected boolean tryRelease(int arg) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Attempts to acquire in shared mode. This method should query if
-     * the state of the object permits it to be acquired in the shared
-     * mode, and if so to acquire it.
-     *
-     * <p>This method is always invoked by the thread performing
-     * acquire.  If this method reports failure, the acquire method
-     * may queue the thread, if it is not already queued, until it is
-     * signalled by a release from some other thread.
-     *
-     * <p>The default implementation throws {@link
-     * UnsupportedOperationException}.
-     *
-     * @param arg the acquire argument. This value is always the one
-     *        passed to an acquire method, or is the value saved on entry
-     *        to a condition wait.  The value is otherwise uninterpreted
-     *        and can represent anything you like.
-     * @return a negative value on failure; zero if acquisition in shared
-     *         mode succeeded but no subsequent shared-mode acquire can
-     *         succeed; and a positive value if acquisition in shared
-     *         mode succeeded and subsequent shared-mode acquires might
-     *         also succeed, in which case a subsequent waiting thread
-     *         must check availability. (Support for three different
-     *         return values enables this method to be used in contexts
-     *         where acquires only sometimes act exclusively.)  Upon
-     *         success, this object has been acquired.
-     * @throws IllegalMonitorStateException if acquiring would place this
-     *         synchronizer in an illegal state. This exception must be
-     *         thrown in a consistent fashion for synchronization to work
-     *         correctly.
-     * @throws UnsupportedOperationException if shared mode is not supported
+     * 共享式的获取同步状态
      */
     protected int tryAcquireShared(int arg) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Attempts to set the state to reflect a release in shared mode.
-     *
-     * <p>This method is always invoked by the thread performing release.
-     *
-     * <p>The default implementation throws
-     * {@link UnsupportedOperationException}.
-     *
-     * @param arg the release argument. This value is always the one
-     *        passed to a release method, or the current state value upon
-     *        entry to a condition wait.  The value is otherwise
-     *        uninterpreted and can represent anything you like.
-     * @return {@code true} if this release of shared mode may permit a
-     *         waiting acquire (shared or exclusive) to succeed; and
-     *         {@code false} otherwise
-     * @throws IllegalMonitorStateException if releasing would place this
-     *         synchronizer in an illegal state. This exception must be
-     *         thrown in a consistent fashion for synchronization to work
-     *         correctly.
-     * @throws UnsupportedOperationException if shared mode is not supported
+     * 共享式的释放同步状态
      */
     protected boolean tryReleaseShared(int arg) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Returns {@code true} if synchronization is held exclusively with
-     * respect to the current (calling) thread.  This method is invoked
-     * upon each call to a non-waiting {@link ConditionObject} method.
-     * (Waiting methods instead invoke {@link #release}.)
-     *
-     * <p>The default implementation throws {@link
-     * UnsupportedOperationException}. This method is invoked
-     * internally only within {@link ConditionObject} methods, so need
-     * not be defined if conditions are not used.
-     *
-     * @return {@code true} if synchronization is held exclusively;
-     *         {@code false} otherwise
-     * @throws UnsupportedOperationException if conditions are not supported
+     * 当前同步器是否在独占模式下被占用
+     * 一般用户表示是否被当前线程所独占
      */
     protected boolean isHeldExclusively() {
         throw new UnsupportedOperationException();
@@ -1049,6 +949,7 @@ public abstract class AbstractQueuedSynchronizer
 
     /**
      * 独占获取锁
+     * 如果没有成功的获取同步状态，将会进入同步队列等待
      *
      * 完成同步状态的获取，节点的构造，加入同步队列以及在同步队列中自旋等待
      */
@@ -1059,18 +960,8 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Acquires in exclusive mode, aborting if interrupted.
-     * Implemented by first checking interrupt status, then invoking
-     * at least once {@link #tryAcquire}, returning on
-     * success.  Otherwise the thread is queued, possibly repeatedly
-     * blocking and unblocking, invoking {@link #tryAcquire}
-     * until success or the thread is interrupted.  This method can be
-     * used to implement method {@link Lock#lockInterruptibly}.
-     *
-     * @param arg the acquire argument.  This value is conveyed to
-     *        {@link #tryAcquire} but is otherwise uninterpreted and
-     *        can represent anything you like.
-     * @throws InterruptedException if the current thread is interrupted
+     * 与acquire一样
+     * 区别在于响应中断，如果当前线程没有获取到同步状态而进入同步队列，如果当前线程被中断，将会抛出异常
      */
     public final void acquireInterruptibly(int arg)
             throws InterruptedException {
@@ -1081,21 +972,7 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Attempts to acquire in exclusive mode, aborting if interrupted,
-     * and failing if the given timeout elapses.  Implemented by first
-     * checking interrupt status, then invoking at least once {@link
-     * #tryAcquire}, returning on success.  Otherwise, the thread is
-     * queued, possibly repeatedly blocking and unblocking, invoking
-     * {@link #tryAcquire} until success or the thread is interrupted
-     * or the timeout elapses.  This method can be used to implement
-     * method {@link Lock#tryLock(long, TimeUnit)}.
-     *
-     * @param arg the acquire argument.  This value is conveyed to
-     *        {@link #tryAcquire} but is otherwise uninterpreted and
-     *        can represent anything you like.
-     * @param nanosTimeout the maximum number of nanoseconds to wait
-     * @return {@code true} if acquired; {@code false} if timed out
-     * @throws InterruptedException if the current thread is interrupted
+     * 在 acquireInterruptibly 基础上新增了超时限制
      */
     public final boolean tryAcquireNanos(int arg, long nanosTimeout)
             throws InterruptedException {
@@ -1119,15 +996,7 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Acquires in shared mode, ignoring interrupts.  Implemented by
-     * first invoking at least once {@link #tryAcquireShared},
-     * returning on success.  Otherwise the thread is queued, possibly
-     * repeatedly blocking and unblocking, invoking {@link
-     * #tryAcquireShared} until success.
-     *
-     * @param arg the acquire argument.  This value is conveyed to
-     *        {@link #tryAcquireShared} but is otherwise uninterpreted
-     *        and can represent anything you like.
+     * 共享式的获取同步状态
      */
     public final void acquireShared(int arg) {
         if (tryAcquireShared(arg) < 0)
@@ -1135,17 +1004,7 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Acquires in shared mode, aborting if interrupted.  Implemented
-     * by first checking interrupt status, then invoking at least once
-     * {@link #tryAcquireShared}, returning on success.  Otherwise the
-     * thread is queued, possibly repeatedly blocking and unblocking,
-     * invoking {@link #tryAcquireShared} until success or the thread
-     * is interrupted.
-     * @param arg the acquire argument.
-     * This value is conveyed to {@link #tryAcquireShared} but is
-     * otherwise uninterpreted and can represent anything
-     * you like.
-     * @throws InterruptedException if the current thread is interrupted
+     * 与 acquireShared 一样，会响应中断
      */
     public final void acquireSharedInterruptibly(int arg)
             throws InterruptedException {
@@ -1156,20 +1015,7 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Attempts to acquire in shared mode, aborting if interrupted, and
-     * failing if the given timeout elapses.  Implemented by first
-     * checking interrupt status, then invoking at least once {@link
-     * #tryAcquireShared}, returning on success.  Otherwise, the
-     * thread is queued, possibly repeatedly blocking and unblocking,
-     * invoking {@link #tryAcquireShared} until success or the thread
-     * is interrupted or the timeout elapses.
-     *
-     * @param arg the acquire argument.  This value is conveyed to
-     *        {@link #tryAcquireShared} but is otherwise uninterpreted
-     *        and can represent anything you like.
-     * @param nanosTimeout the maximum number of nanoseconds to wait
-     * @return {@code true} if acquired; {@code false} if timed out
-     * @throws InterruptedException if the current thread is interrupted
+     * 与 acquireSharedInterruptibly 一样，增加了超时限制
      */
     public final boolean tryAcquireSharedNanos(int arg, long nanosTimeout)
             throws InterruptedException {
@@ -1180,13 +1026,7 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Releases in shared mode.  Implemented by unblocking one or more
-     * threads if {@link #tryReleaseShared} returns true.
-     *
-     * @param arg the release argument.  This value is conveyed to
-     *        {@link #tryReleaseShared} but is otherwise uninterpreted
-     *        and can represent anything you like.
-     * @return the value returned from {@link #tryReleaseShared}
+     * 共享式的释放同步状态
      */
     public final boolean releaseShared(int arg) {
         if (tryReleaseShared(arg)) {
@@ -1196,7 +1036,7 @@ public abstract class AbstractQueuedSynchronizer
         return false;
     }
 
-    // Queue inspection methods
+    // Queue inspection methods 队列方法
 
     /**
      * Queries whether any threads are waiting to acquire. Note that
@@ -1583,7 +1423,7 @@ public abstract class AbstractQueuedSynchronizer
         }
     }
 
-    // Instrumentation methods for conditions
+    // Instrumentation methods for conditions       条件的仪器方法
 
     /**
      * Queries whether the given ConditionObject
@@ -2132,14 +1972,14 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * CAS head field. Used only by enq.
+     *CAS 的设置头结点  只用于 enq方法
      */
     private final boolean compareAndSetHead(Node update) {
         return unsafe.compareAndSwapObject(this, headOffset, null, update);
     }
 
     /**
-     * CAS tail field. Used only by enq.
+     * CAS 的设置尾结点
      */
     private final boolean compareAndSetTail(Node expect, Node update) {
         return unsafe.compareAndSwapObject(this, tailOffset, expect, update);
