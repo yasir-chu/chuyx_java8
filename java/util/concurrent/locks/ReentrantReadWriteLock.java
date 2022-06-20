@@ -264,9 +264,9 @@ public class ReentrantReadWriteLock
         static final int MAX_COUNT      = (1 << SHARED_SHIFT) - 1;
         static final int EXCLUSIVE_MASK = (1 << SHARED_SHIFT) - 1;
 
-        /** Returns the number of shared holds represented in count  */
+        /** 读状态  */
         static int sharedCount(int c)    { return c >>> SHARED_SHIFT; }
-        /** Returns the number of exclusive holds represented in count  */
+        /** 写状态  */
         static int exclusiveCount(int c) { return c & EXCLUSIVE_MASK; }
 
         /**
@@ -389,16 +389,21 @@ public class ReentrantReadWriteLock
              *    queue policy allows it. If so, update state
              *    and set owner.
              */
+            // 当前线程
             Thread current = Thread.currentThread();
+            // 当前锁状态
             int c = getState();
+            // 获取 写状态
             int w = exclusiveCount(c);
+            // 当前锁被占用
             if (c != 0) {
-                // (Note: if c != 0 and w == 0 then shared count != 0)
+                // w == 0 ture 读锁存在不给占用   写状态未被占用 获取 当前线程 不等于锁被占有线程
                 if (w == 0 || current != getExclusiveOwnerThread())
                     return false;
+                // 写锁占用超过最多占有数
                 if (w + exclusiveCount(acquires) > MAX_COUNT)
                     throw new Error("Maximum lock count exceeded");
-                // Reentrant acquire
+                // 设置当前状态
                 setState(c + acquires);
                 return true;
             }
@@ -1250,22 +1255,14 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * Queries the number of read locks held for this lock. This
-     * method is designed for use in monitoring system state, not for
-     * synchronization control.
-     * @return the number of read locks held
+     * 返回当前读锁被获取的次数
      */
     public int getReadLockCount() {
         return sync.getReadLockCount();
     }
 
     /**
-     * Queries if the write lock is held by any thread. This method is
-     * designed for use in monitoring system state, not for
-     * synchronization control.
-     *
-     * @return {@code true} if any thread holds the write lock and
-     *         {@code false} otherwise
+     * 判断写锁是否被获取
      */
     public boolean isWriteLocked() {
         return sync.isWriteLocked();
@@ -1282,25 +1279,14 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * Queries the number of reentrant write holds on this lock by the
-     * current thread.  A writer thread has a hold on a lock for
-     * each lock action that is not matched by an unlock action.
-     *
-     * @return the number of holds on the write lock by the current thread,
-     *         or zero if the write lock is not held by the current thread
+     * 返回当前线程 获取写锁的次数
      */
     public int getWriteHoldCount() {
         return sync.getWriteHoldCount();
     }
 
     /**
-     * Queries the number of reentrant read holds on this lock by the
-     * current thread.  A reader thread has a hold on a lock for
-     * each lock action that is not matched by an unlock action.
-     *
-     * @return the number of holds on the read lock by the current thread,
-     *         or zero if the read lock is not held by the current thread
-     * @since 1.6
+     * 返回当前线程 获取读锁的次数
      */
     public int getReadHoldCount() {
         return sync.getReadHoldCount();

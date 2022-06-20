@@ -118,16 +118,12 @@ package java.util.concurrent.locks;
  */
 public interface ReadWriteLock {
     /**
-     * Returns the lock used for reading.
-     *
-     * @return the lock used for reading
+     * 获取读锁
      */
     Lock readLock();
 
     /**
-     * Returns the lock used for writing.
-     *
-     * @return the lock used for writing
+     * 获取写锁
      */
     Lock writeLock();
 }
