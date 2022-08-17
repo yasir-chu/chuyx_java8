@@ -250,7 +250,7 @@ public class ConcurrentLinkedQueue<E> extends AbstractQueue<E>
     private transient volatile Node<E> tail;
 
     /**
-     * Creates a {@code ConcurrentLinkedQueue} that is initially empty.
+     * 默认初始化 head 为空 tail等于head
      */
     public ConcurrentLinkedQueue() {
         head = tail = new Node<E>(null);
@@ -327,15 +327,15 @@ public class ConcurrentLinkedQueue<E> extends AbstractQueue<E>
         checkNotNull(e);
         final Node<E> newNode = new Node<E>(e);
 
+        // 自旋插入尾队列
         for (Node<E> t = tail, p = t;;) {
             Node<E> q = p.next;
             if (q == null) {
-                // p is last node
+                // p is last node p是尾节点 如果p是空的话 证明 原始尾节点已经被消费了
                 if (p.casNext(null, newNode)) {
-                    // Successful CAS is the linearization point
-                    // for e to become an element of this queue,
-                    // and for newNode to become "live".
+                    // 如果p不是尾结点了    将新节点放到尾结点   那原始p捏？
                     if (p != t) // hop two nodes at a time
+                        // 更新新的尾节点 为 tail
                         casTail(t, newNode);  // Failure is OK.
                     return true;
                 }

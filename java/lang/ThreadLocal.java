@@ -286,14 +286,8 @@ public class ThreadLocal<T> {
     }
 
     /**
-     * ThreadLocalMap is a customized hash map suitable only for
-     * maintaining thread local values. No operations are exported
-     * outside of the ThreadLocal class. The class is package private to
-     * allow declaration of fields in class Thread.  To help deal with
-     * very large and long-lived usages, the hash table entries use
-     * WeakReferences for keys. However, since reference queues are not
-     * used, stale entries are guaranteed to be removed only when
-     * the table starts running out of space.
+     * ThreadLocal存储线程数据的底层数据结构
+     * 相比于hashMap  它只是一个数组 没有链表
      */
     static class ThreadLocalMap {
 
@@ -316,13 +310,12 @@ public class ThreadLocal<T> {
         }
 
         /**
-         * The initial capacity -- MUST be a power of two.
+         * 初始大小
          */
         private static final int INITIAL_CAPACITY = 16;
 
         /**
-         * The table, resized as necessary.
-         * table.length MUST always be a power of two.
+         * 存储
          */
         private Entry[] table;
 
@@ -453,13 +446,10 @@ public class ThreadLocal<T> {
          */
         private void set(ThreadLocal<?> key, Object value) {
 
-            // We don't use a fast path as with get() because it is at
-            // least as common to use set() to create new entries as
-            // it is to replace existing ones, in which case, a fast
-            // path would fail more often than not.
 
             Entry[] tab = table;
             int len = tab.length;
+            // 自己hash
             int i = key.threadLocalHashCode & (len-1);
 
             for (Entry e = tab[i];
@@ -467,11 +457,13 @@ public class ThreadLocal<T> {
                  e = tab[i = nextIndex(i, len)]) {
                 ThreadLocal<?> k = e.get();
 
+                // hash冲突后 如果key相同 这直接覆盖value
                 if (k == key) {
                     e.value = value;
                     return;
                 }
 
+                // 如果旧key为空  存入数据
                 if (k == null) {
                     replaceStaleEntry(key, value, i);
                     return;

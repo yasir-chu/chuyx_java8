@@ -182,9 +182,7 @@ public abstract class ClassLoader {
         registerNatives();
     }
 
-    // The parent class loader for delegation
-    // Note: VM hardcoded the offset of this field, thus all new fields
-    // must be added *after* it.
+    // 父级 类加载器
     private final ClassLoader parent;
 
     /**
