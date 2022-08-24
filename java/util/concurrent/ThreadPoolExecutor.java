@@ -378,11 +378,22 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * that workerCount is 0 (which sometimes entails a recheck -- see
      * below).
      */
+    /**
+     * 用一个atomicInteger 同时记录 线程池状态 和 线程数量
+     * 高3位保存runState，低29位保存workerCount
+     */
     private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
     private static final int COUNT_BITS = Integer.SIZE - 3;
     private static final int CAPACITY   = (1 << COUNT_BITS) - 1;
 
-    // runState is stored in the high-order bits
+    /**
+     *  线程池运行状态
+     *  RUNNING 运行状态，可以接受新任务 也可以处理队列中的任务
+     *  SHUTDOWN 关闭状态，不可以接受新任务，但是可以处理队列中的任务
+     *  STOP 停止状态，不接受新任务，不处理队列中的任务，会中断正在执行的任务
+     *  TIDYING 所有任务都已经终止了，有效线程数workerCount为0
+     *  TERMINATED 在terminated() 方法执行完成之后，进入该状态
+     */
     private static final int RUNNING    = -1 << COUNT_BITS;
     private static final int SHUTDOWN   =  0 << COUNT_BITS;
     private static final int STOP       =  1 << COUNT_BITS;
@@ -390,8 +401,11 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     private static final int TERMINATED =  3 << COUNT_BITS;
 
     // Packing and unpacking ctl
+    // 计算当前运行状态
     private static int runStateOf(int c)     { return c & ~CAPACITY; }
+    // 获取有效线程数
     private static int workerCountOf(int c)  { return c & CAPACITY; }
+    // 通过状态和线程数 生产ctl
     private static int ctlOf(int rs, int wc) { return rs | wc; }
 
     /*
@@ -407,6 +421,9 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
         return c >= s;
     }
 
+    /**
+     * 判断是否是运行状态
+     */
     private static boolean isRunning(int c) {
         return c < SHUTDOWN;
     }
@@ -1343,6 +1360,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
          * and so reject the task.
          */
         int c = ctl.get();
+        // 有效线程数 小于 核心线程数
         if (workerCountOf(c) < corePoolSize) {
             if (addWorker(command, true))
                 return;
