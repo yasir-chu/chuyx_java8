@@ -482,12 +482,14 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * also hold mainLock on shutdown and shutdownNow, for the sake of
      * ensuring workers set is stable while separately checking
      * permission to interrupt and actually interrupting.
+     * 不使用线程安全的Set类是为了防止中断风暴。
      */
     private final ReentrantLock mainLock = new ReentrantLock();
 
     /**
      * Set containing all worker threads in pool. Accessed only when
      * holding mainLock.
+     * 线程池中所有工作线程(活跃中的线程)的集合，只有持有mainLock时才可以访问
      */
     private final HashSet<Worker> workers = new HashSet<Worker>();
 
@@ -499,12 +501,14 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     /**
      * Tracks largest attained pool size. Accessed only under
      * mainLock.
+     * 线程池中存活过程中持有最多的线程数。只有持有主锁的时候才才能访问。
      */
     private int largestPoolSize;
 
     /**
      * Counter for completed tasks. Updated only on termination of
      * worker threads. Accessed only under mainLock.
+     * 线程池完成任务的总数量
      */
     private long completedTaskCount;
 
@@ -550,6 +554,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 
     /**
      * The default rejected execution handler
+     * 默认的拒绝策略是 拒绝任务并抛出异常策略
      */
     private static final RejectedExecutionHandler defaultHandler =
         new AbortPolicy();
@@ -582,7 +587,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 
     /**
      * 线程池中的线程并不是直接使用的Thread类，而是定义了一个内部工作现场Worker类
-     * 继承了AQS 并实现了Runnable接口
+     * 继承了AQS 并实现了Runnable接口。
+     * 它其实也是一个锁
      */
     private final class Worker
         extends AbstractQueuedSynchronizer
@@ -594,19 +600,25 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
          */
         private static final long serialVersionUID = 6138294804551838833L;
 
-        /** Thread this worker is running in.  Null if factory fails. */
+        /** Thread this worker is running in.  Null if factory fails.
+         *  启动线程后  它才不为null
+         * */
         final Thread thread;
-        /** Initial task to run.  Possibly null. */
+        /** Initial task to run.  Possibly null.
+         *  任务放在这里
+         * */
         Runnable firstTask;
         /** Per-thread task counter */
         volatile long completedTasks;
 
         /**
          * Creates with given first task and thread from ThreadFactory.
+         * 构建一个一个Worker，
          * @param firstTask the first task (null if none)
+         *
          */
         Worker(Runnable firstTask) {
-            setState(-1); // inhibit interrupts until runWorker
+            setState(-1); // inhibit interrupts until runWorker 默认设置为-1状态
             this.firstTask = firstTask;
             this.thread = getThreadFactory().newThread(this);
         }
@@ -910,6 +922,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                 ! (rs == SHUTDOWN &&
                    firstTask == null &&
                    ! workQueue.isEmpty()))
+                // 这个成立即：不接受新任务状态 或 todo
                 return false;
 
             for (;;) {
@@ -917,7 +930,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                 int wc = workerCountOf(c);
                 if (wc >= CAPACITY ||
                     wc >= (core ? corePoolSize : maximumPoolSize))
-                    // 当前线程数大于等于线程池最大线程数 或者 当前线程数大于等于 核心线程数/最大线程数
+                    // 当前线程数大于等于线程池最大线程数 或者 当前线程数大于等于 核心线程数/最大线程数  这个时候 应该进入排队队列
                     return false;
                 if (compareAndIncrementWorkerCount(c))
                     // 新增一个活跃线程数 结束
@@ -933,6 +946,9 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                  */
             }
         }
+        /**
+         * 情况1：线程池当前活跃线程数小于核心线程数，直接使用使用一个核心线程执行该任务。
+         */
 
         boolean workerStarted = false;
         boolean workerAdded = false;
@@ -956,19 +972,23 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                     // 是运行状态  或 关闭状态并且首次任务是空 结束
                     if (rs < SHUTDOWN ||
                         (rs == SHUTDOWN && firstTask == null)) {
-                        if (t.isAlive()) // 检查线程是否存活   存活 抛出异常？
+                        if (t.isAlive()) // 检查线程已经在运行
                             throw new IllegalThreadStateException();
+                        // 运行中的线程 新增当前任务
                         workers.add(w);
                         int s = workers.size();
                         if (s > largestPoolSize)
                             largestPoolSize = s;
+                        // 是否新增worker成功设置为true
                         workerAdded = true;
                     }
                 } finally {
                     mainLock.unlock();
                 }
                 if (workerAdded) {
+                    // 新增成功  当前任务线程启动
                     t.start();
+                    // 成功启动  设置为true
                     workerStarted = true;
                 }
             }
