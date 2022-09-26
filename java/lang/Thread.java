@@ -177,14 +177,10 @@ class Thread implements Runnable {
         return threadInitNumber++;
     }
 
-    /* ThreadLocal values pertaining to this thread. This map is maintained
-     * by the ThreadLocal class. */
-    ThreadLocal.ThreadLocalMap threadLocals = null;
-
-    /*
-     * InheritableThreadLocal values pertaining to this thread. This map is
-     * maintained by the InheritableThreadLocal class.
+    /**
+     * 与该线程的ThreadLocal相关，默认都是null
      */
+    ThreadLocal.ThreadLocalMap threadLocals = null;
     ThreadLocal.ThreadLocalMap inheritableThreadLocals = null;
 
     /*

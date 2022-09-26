@@ -197,11 +197,15 @@ public class ThreadLocal<T> {
      *        this thread-local.
      */
     public void set(T value) {
+        // 获取当前线程信息
         Thread t = Thread.currentThread();
+        // 直接获取Thread的threadLocals属性
         ThreadLocalMap map = getMap(t);
         if (map != null)
+            // 如果不为空，则直接设置
             map.set(this, value);
         else
+            // 如果为空  则新增后设置
             createMap(t, value);
     }
 
@@ -356,10 +360,13 @@ public class ThreadLocal<T> {
          * one when we have at least one entry to put in it.
          */
         ThreadLocalMap(ThreadLocal<?> firstKey, Object firstValue) {
+            // 初始化
             table = new Entry[INITIAL_CAPACITY];
+            // hash
             int i = firstKey.threadLocalHashCode & (INITIAL_CAPACITY - 1);
             table[i] = new Entry(firstKey, firstValue);
             size = 1;
+            // 设置扩容阈值
             setThreshold(INITIAL_CAPACITY);
         }
 
@@ -452,6 +459,7 @@ public class ThreadLocal<T> {
             // 自己hash
             int i = key.threadLocalHashCode & (len-1);
 
+            // 拉链法存储
             for (Entry e = tab[i];
                  e != null;
                  e = tab[i = nextIndex(i, len)]) {
