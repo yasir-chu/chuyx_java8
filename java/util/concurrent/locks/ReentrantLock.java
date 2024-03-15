@@ -150,9 +150,12 @@ public class ReentrantLock implements Lock, java.io.Serializable {
         }
 
         protected final boolean tryRelease(int releases) {
+
             int c = getState() - releases;
+            // 如果当前线程不是占据锁线程 抛出异常
             if (Thread.currentThread() != getExclusiveOwnerThread())
                 throw new IllegalMonitorStateException();
+            // 是否完全释放锁
             boolean free = false;
             if (c == 0) {
                 free = true;
@@ -236,8 +239,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
         }
 
         /**
-         * Fair version of tryAcquire.  Don't grant access unless
-         * recursive call or no waiters or is first.
+         * 公平锁获取锁
          */
         protected final boolean tryAcquire(int acquires) {
             final Thread current = Thread.currentThread();
@@ -454,6 +456,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
     }
 
     /**
+     * 解锁
      * Attempts to release this lock.
      *
      * <p>If the current thread is the holder of this lock then the hold

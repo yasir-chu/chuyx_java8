@@ -95,6 +95,8 @@ public class ArrayDeque<E> extends AbstractCollection<E>
      * thus avoiding head and tail wrapping around to equal each
      * other.  We also guarantee that all array cells not holding
      * deque elements are always null.
+     *
+     * 存储deque元素的数组
      */
     transient Object[] elements; // non-private to simplify nested class access
 
@@ -114,17 +116,25 @@ public class ArrayDeque<E> extends AbstractCollection<E>
     /**
      * The minimum capacity that we'll use for a newly created deque.
      * Must be a power of 2.
+     * 最小长度 deque的长度永远是2的幂数
      */
     private static final int MIN_INITIAL_CAPACITY = 8;
 
     // ******  Array allocation and resizing utilities ******
 
+    /**
+     * 计算大小
+     * @param numElements
+     * @return
+     */
     private static int calculateSize(int numElements) {
+        // 初始长度 如果
         int initialCapacity = MIN_INITIAL_CAPACITY;
         // Find the best power of two to hold elements.
         // Tests "<=" because arrays aren't kept full.
         if (numElements >= initialCapacity) {
             initialCapacity = numElements;
+            // 变成最靠近numElements值的2的幂数
             initialCapacity |= (initialCapacity >>>  1);
             initialCapacity |= (initialCapacity >>>  2);
             initialCapacity |= (initialCapacity >>>  4);
@@ -132,6 +142,7 @@ public class ArrayDeque<E> extends AbstractCollection<E>
             initialCapacity |= (initialCapacity >>> 16);
             initialCapacity++;
 
+            // 太长 变成最大值 2的30次幂
             if (initialCapacity < 0)   // Too many elements, must back off
                 initialCapacity >>>= 1;// Good luck allocating 2 ^ 30 elements
         }
@@ -150,11 +161,16 @@ public class ArrayDeque<E> extends AbstractCollection<E>
     /**
      * Doubles the capacity of this deque.  Call only when full, i.e.,
      * when head and tail have wrapped around to become equal.
+     * 扩容
      */
     private void doubleCapacity() {
+        // 防止头尾相交
         assert head == tail;
+
         int p = head;
         int n = elements.length;
+
+        // 头右边元素数量
         int r = n - p; // number of elements to the right of p
         int newCapacity = n << 1;
         if (newCapacity < 0)

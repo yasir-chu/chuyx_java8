@@ -407,7 +407,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     private static final int TERMINATED =  3 << COUNT_BITS; // 011 0*29
 
     // Packing and unpacking ctl
-    // 计算当前运行状态 低29位变成0 与c
+    // 计算当前运行状态 低29位变成0 与反c
     private static int runStateOf(int c)     { return c & ~CAPACITY; }
     // 获取活跃线程数 低29位变成1  与c
     private static int workerCountOf(int c)  { return c & CAPACITY; }
