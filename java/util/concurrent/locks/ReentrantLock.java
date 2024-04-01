@@ -112,6 +112,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
      * Base of synchronization control for this lock. Subclassed
      * into fair and nonfair versions below. Uses AQS state to
      * represent the number of holds on the lock.
+     * Sync 继承 队列同步器 -> 相当于是一个队列同步器
      */
     abstract static class Sync extends AbstractQueuedSynchronizer {
         private static final long serialVersionUID = -5179523762034025860L;
@@ -242,15 +243,19 @@ public class ReentrantLock implements Lock, java.io.Serializable {
          * 公平锁获取锁
          */
         protected final boolean tryAcquire(int acquires) {
+            // 当前线程
             final Thread current = Thread.currentThread();
             int c = getState();
+            // 无锁
             if (c == 0) {
                 if (!hasQueuedPredecessors() &&
+                        // cas加锁
                     compareAndSetState(0, acquires)) {
                     setExclusiveOwnerThread(current);
                     return true;
                 }
             }
+            // 有锁 并且 当前线程和当前锁占有的线程是同一个线程的话 可获取锁 因为是可重入的
             else if (current == getExclusiveOwnerThread()) {
                 int nextc = c + acquires;
                 if (nextc < 0)
@@ -258,6 +263,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
                 setState(nextc);
                 return true;
             }
+            // 获取锁失败
             return false;
         }
     }

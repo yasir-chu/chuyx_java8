@@ -25,6 +25,8 @@
 
 package java.util;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -176,7 +178,7 @@ public class ArrayList<E> extends AbstractList<E>
      * 可以使用这个方法来内存最小化集合
      */
     public void trimToSize() {
-        modCount++;
+        modCount++; // 该结构被修改的次数
         if (size < elementData.length) {
             elementData = (size == 0)
               ? EMPTY_ELEMENTDATA
@@ -185,11 +187,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Increases the capacity of this <tt>ArrayList</tt> instance, if
-     * necessary, to ensure that it can hold at least the number of elements
-     * specified by the minimum capacity argument.
-     *
-     * @param   minCapacity   the desired minimum capacity
+     * 确保容量  使数组大小最少有minCapacity 这么大
      */
     public void ensureCapacity(int minCapacity) {
         int minExpand = (elementData != DEFAULTCAPACITY_EMPTY_ELEMENTDATA)
@@ -204,17 +202,29 @@ public class ArrayList<E> extends AbstractList<E>
         }
     }
 
+    /**
+     * 容量计算
+     *
+     * @param elementData 元素数组
+     * @param minCapacity 最小容量
+     * @return 结果
+     */
     private static int calculateCapacity(Object[] elementData, int minCapacity) {
+        // 如果元素数组是默认的空数组
         if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
             return Math.max(DEFAULT_CAPACITY, minCapacity);
         }
         return minCapacity;
-        }
+    }
 
     private void ensureCapacityInternal(int minCapacity) {
         ensureExplicitCapacity(calculateCapacity(elementData, minCapacity));
     }
 
+    /**
+     * 最小容量保证 扩容
+     * @param minCapacity
+     */
     private void ensureExplicitCapacity(int minCapacity) {
         /** 改变大小的次数 */
         modCount++;
@@ -229,16 +239,18 @@ public class ArrayList<E> extends AbstractList<E>
      * Some VMs reserve some header words in an array.
      * Attempts to allocate larger arrays may result in
      * OutOfMemoryError: Requested array size exceeds VM limit
+     * 最大数组长度
      */
     private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
     /**
-     * 增加容量
+     * 增加容量 每次扩展1.5倍
      * @param minCapacity 所需要的最小容量
      */
     private void grow(int minCapacity) {
         // overflow-conscious code
         int oldCapacity = elementData.length;
+        // 扩容1.5倍
         int newCapacity = oldCapacity + (oldCapacity >> 1);
         if (newCapacity - minCapacity < 0)
             newCapacity = minCapacity;
@@ -741,8 +753,8 @@ public class ArrayList<E> extends AbstractList<E>
      * Reconstitute the <tt>ArrayList</tt> instance from a stream (that is,
      * deserialize it).
      */
-    private void readObject(java.io.ObjectInputStream s)
-        throws java.io.IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream s)
+        throws IOException, ClassNotFoundException {
         elementData = EMPTY_ELEMENTDATA;
 
         // Read in size, and any hidden stuff
@@ -807,7 +819,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * An optimized version of AbstractList.Itr
+     * AbstractList 的 优化版本
      */
     private class Itr implements Iterator<E> {
         int cursor;       // index of next element to return

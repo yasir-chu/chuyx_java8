@@ -288,7 +288,7 @@ import sun.misc.Unsafe;
  */
 
 /**
- * 同步器
+ * 队列同步器
  */
 public abstract class AbstractQueuedSynchronizer
     extends AbstractOwnableSynchronizer
@@ -556,6 +556,7 @@ public abstract class AbstractQueuedSynchronizer
                         continue;            // loop to recheck cases
                     unparkSuccessor(h);
                 }
+                // CAS 失败就一直循环
                 else if (ws == 0 &&
                          !compareAndSetWaitStatus(h, 0, Node.PROPAGATE))
                     continue;                // loop on failed CAS
@@ -1198,6 +1199,7 @@ public abstract class AbstractQueuedSynchronizer
      *         current thread, and {@code false} if the current thread
      *         is at the head of the queue or the queue is empty
      * @since 1.7
+     * 公平锁判定是否需要排队
      */
     public final boolean hasQueuedPredecessors() {
         // The correctness of this depends on head being initialized
@@ -1206,6 +1208,7 @@ public abstract class AbstractQueuedSynchronizer
         Node t = tail; // Read fields in reverse initialization order
         Node h = head;
         Node s;
+        // 尾结点不等于头节点 && （头节点的子节点为空 || 头结点的下一个节点等待锁线程是当前线程）
         return h != t &&
             ((s = h.next) == null || s.thread != Thread.currentThread());
     }
