@@ -306,9 +306,9 @@ public abstract class AbstractQueuedSynchronizer
      * 排队线程中的最小单位
      */
     static final class Node {
-        /** Marker to indicate a node is waiting in shared mode */
+        /** 共享模式 */
         static final Node SHARED = new Node();
-        /** Marker to indicate a node is waiting in exclusive mode */
+        /** 独占模式 */
         static final Node EXCLUSIVE = null;
 
         /** 表示线程获取锁的请求已经取消了 */
@@ -321,6 +321,7 @@ public abstract class AbstractQueuedSynchronizer
          * 当前线程处在SHARED情况下
          */
         static final int PROPAGATE = -3;
+//        0表示当前节点在sync队列中，等待着获取锁
 
         /**
          * 等待状态  上面的四个值
@@ -350,17 +351,15 @@ public abstract class AbstractQueuedSynchronizer
 
         /**
          * Returns true if node is waiting in shared mode.
+         * 判定是否是共享模式
          */
         final boolean isShared() {
             return nextWaiter == SHARED;
         }
 
         /**
-         * Returns previous node, or throws NullPointerException if null.
-         * Use when predecessor cannot be null.  The null check could
-         * be elided, but is present to help the VM.
-         *
-         * @return the predecessor of this node
+         * 获取前驱节点
+         * 没有前驱节点抛出空指针
          */
         final Node predecessor() throws NullPointerException {
             Node p = prev;
@@ -433,6 +432,7 @@ public abstract class AbstractQueuedSynchronizer
      * The number of nanoseconds for which it is faster to spin
      * rather than to use timed park. A rough estimate suffices
      * to improve responsiveness with very short timeouts.
+     * 自旋时间
      */
     static final long spinForTimeoutThreshold = 1000L;
 
@@ -1520,9 +1520,9 @@ public abstract class AbstractQueuedSynchronizer
      */
     public class ConditionObject implements Condition, java.io.Serializable {
         private static final long serialVersionUID = 1173984872572414699L;
-        /** First node of condition queue. */
+        /** condition队列的头结点 */
         private transient Node firstWaiter;
-        /** Last node of condition queue. */
+        /** condition队列的尾结点 */
         private transient Node lastWaiter;
 
         /**
@@ -1533,8 +1533,7 @@ public abstract class AbstractQueuedSynchronizer
         // Internal methods
 
         /**
-         * Adds a new waiter to wait queue.
-         * @return its new wait node
+         * 添加新的节点到条件队列中
          */
         private Node addConditionWaiter() {
             Node t = lastWaiter;
@@ -1561,6 +1560,7 @@ public abstract class AbstractQueuedSynchronizer
          */
         private void doSignal(Node first) {
             do {
+                // 该节点的后驱节点为空
                 if ( (firstWaiter = first.nextWaiter) == null)
                     lastWaiter = null;
                 first.nextWaiter = null;
@@ -1616,8 +1616,10 @@ public abstract class AbstractQueuedSynchronizer
          *         returns {@code false}
          */
         public final void signal() {
+            // 如果不是独占锁 抛出异常
             if (!isHeldExclusively())
                 throw new IllegalMonitorStateException();
+            // 获取队列的头结点
             Node first = firstWaiter;
             if (first != null)
                 doSignal(first);

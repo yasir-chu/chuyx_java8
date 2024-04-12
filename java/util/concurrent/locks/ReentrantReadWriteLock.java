@@ -214,10 +214,13 @@ import java.util.Collection;
  */
 public class ReentrantReadWriteLock
         implements ReadWriteLock, java.io.Serializable {
+    /**
+     * 序列号
+     */
     private static final long serialVersionUID = -6992448646407690164L;
-    /** Inner class providing readlock */
+    /** 内部类：读锁 */
     private final ReentrantReadWriteLock.ReadLock readerLock;
-    /** Inner class providing writelock */
+    /** 内部类：写锁 */
     private final ReentrantReadWriteLock.WriteLock writerLock;
     /** Performs all synchronization mechanics */
     final Sync sync;
@@ -259,9 +262,21 @@ public class ReentrantReadWriteLock
          * and the upper the shared (reader) hold count.
          */
 
-        static final int SHARED_SHIFT   = 16;
+        /**
+         * 高16位为读锁，低16位为写锁
+         */
+        static final int SHARED_SHIFT = 16;
+        /**
+         * 读锁单位
+         */
         static final int SHARED_UNIT    = (1 << SHARED_SHIFT);
+        /**
+         * 读锁最大可重入次数
+         */
         static final int MAX_COUNT      = (1 << SHARED_SHIFT) - 1;
+        /**
+         * 写锁最大可重入次数
+         */
         static final int EXCLUSIVE_MASK = (1 << SHARED_SHIFT) - 1;
 
         /** 读状态  */
@@ -272,16 +287,17 @@ public class ReentrantReadWriteLock
         /**
          * A counter for per-thread read hold counts.
          * Maintained as a ThreadLocal; cached in cachedHoldCounter
+         * 每个线程的计数器
          */
         static final class HoldCounter {
+            // 主要用来记录 读线程重入的次数
             int count = 0;
-            // Use id, not reference, to avoid garbage retention
+            // tid表示该线程的tid字段的值，该字段可以用来唯一标识一个线程
             final long tid = getThreadId(Thread.currentThread());
         }
 
         /**
-         * ThreadLocal subclass. Easiest to explicitly define for sake
-         * of deserialization mechanics.
+         * 用ThreadLocal来记录HoldCounter
          */
         static final class ThreadLocalHoldCounter
             extends ThreadLocal<HoldCounter> {
@@ -370,6 +386,7 @@ public class ReentrantReadWriteLock
             if (!isHeldExclusively())
                 throw new IllegalMonitorStateException();
             int nextc = getState() - releases;
+            // 是否释放成功
             boolean free = exclusiveCount(nextc) == 0;
             if (free)
                 setExclusiveOwnerThread(null);
@@ -377,18 +394,10 @@ public class ReentrantReadWriteLock
             return free;
         }
 
+        /**
+         * 获取写锁
+         */
         protected final boolean tryAcquire(int acquires) {
-            /*
-             * Walkthrough:
-             * 1. If read count nonzero or write count nonzero
-             *    and owner is a different thread, fail.
-             * 2. If count would saturate, fail. (This can only
-             *    happen if count is already nonzero.)
-             * 3. Otherwise, this thread is eligible for lock if
-             *    it is either a reentrant acquire or
-             *    queue policy allows it. If so, update state
-             *    and set owner.
-             */
             // 当前线程
             Thread current = Thread.currentThread();
             // 当前锁状态
@@ -397,7 +406,7 @@ public class ReentrantReadWriteLock
             int w = exclusiveCount(c);
             // 当前锁被占用
             if (c != 0) {
-                // w == 0 ture 读锁存在不给占用   写状态未被占用 获取 当前线程 不等于锁被占有线程
+                // w == 0 写锁不存在即读锁存在 || 写状态被占用 当前线程 不等于锁被占有线程
                 if (w == 0 || current != getExclusiveOwnerThread())
                     return false;
                 // 写锁占用超过最多占有数
@@ -414,6 +423,9 @@ public class ReentrantReadWriteLock
             return true;
         }
 
+        /**
+         * 释放共享锁
+         */
         protected final boolean tryReleaseShared(int unused) {
             Thread current = Thread.currentThread();
             if (firstReader == current) {
@@ -607,6 +619,9 @@ public class ReentrantReadWriteLock
             }
         }
 
+        /**
+         * 判定是否是当前线程占有锁
+         */
         protected final boolean isHeldExclusively() {
             // While we must in general read state before owner,
             // we don't need to do so to check if current thread is owner
@@ -706,6 +721,9 @@ public class ReentrantReadWriteLock
      */
     public static class ReadLock implements Lock, java.io.Serializable {
         private static final long serialVersionUID = -5992448646407690164L;
+        /**
+         * 有一个同步器
+         */
         private final Sync sync;
 
         /**
@@ -727,6 +745,7 @@ public class ReentrantReadWriteLock
          * <p>If the write lock is held by another thread then
          * the current thread becomes disabled for thread scheduling
          * purposes and lies dormant until the read lock has been acquired.
+         * 读锁是共享的
          */
         public void lock() {
             sync.acquireShared(1);
